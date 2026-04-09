@@ -3,7 +3,7 @@ Empirical Time Series Analysis and Monte Carlo Simulation
 Overview:
 This project analyzes financial time series data using statistical methods and Monte Carlo simulation. It focuses on return distributions, normality assessment, and simulation of future price paths.
 
-Features:
+Features: 
  - Calculation of returns
  - Statistical analysis (mean and variance)
  - Histogram with normal distribution overlay
