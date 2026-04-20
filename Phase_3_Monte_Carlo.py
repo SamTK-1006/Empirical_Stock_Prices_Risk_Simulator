@@ -1,7 +1,6 @@
 import Phase_1_Empirical_Time_Series as P1
 import numpy as np
 import matplotlib.pyplot as plt
-import statistics
 
 def Monte_Carlo_Simulations(data):
     # Calculating Base Price, Mean and Variance of Returns
