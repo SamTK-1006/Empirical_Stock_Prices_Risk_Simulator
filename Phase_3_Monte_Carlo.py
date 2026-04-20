@@ -51,9 +51,6 @@ def Plot_Monte_Carlo(simulated_paths):
     a2.text(0.985, 0.95, f"Starting Price: {starting_price:.2f}", transform = a2.transAxes, ha = "right", va = "top", fontsize=10, bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
     
     # Highlighting the most probable final price (mode) on the plot
-    # rounded_prices = [round(p) for p in last_prices]
-    # highest_probability_price = statistics.mode(rounded_prices)
-
     counts, bins = np.histogram(last_prices, bins=50)
     max_bin_index = np.argmax(counts)
     highest_probability_price = (bins[max_bin_index] + bins[max_bin_index+1]) / 2
