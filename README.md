@@ -3,7 +3,8 @@ Empirical Time Series Analysis and Monte Carlo Simulation
 
 > Overview: 
 
-This project analyzes financial time series data using statistical methods and Monte Carlo simulation. It focuses on return distributions, normality assessment, and simulation of future price paths.
+This project analyzes financial time series data using statistical methods and Monte Carlo simulation. It focuses on return distributions, normality assessment, and simulation of future price paths. Currently, the project is deployed on streamlit and can be accessed through the following link: 
+https://monte-carlo-simulator-samtk-1006.streamlit.app/
 
 
 > Features: 
@@ -39,6 +40,7 @@ The project primarily relies on the following Python libraries:
  - numpy
  - pandas
  - matplotlib
+ - streamlit
 
 
 
