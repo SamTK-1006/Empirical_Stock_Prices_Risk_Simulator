@@ -1,28 +1,15 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import streamlit as st
 
 def use_yahoo(data):
     # Printing mean and variance of returns
     mean, var = cal_stats(cal_returns(data))
-    print(f"Mean Returns: {mean}, Variance of Returns: {var}")
+    st.write(f"Mean Returns: {mean:.6f}, Variance of Returns: {var:.6f}")
 
     # Plotting the Price and Returns
     data_plot(data)   
-
-
-def use_own(data):
-    # Converting Date to datetime and setting it as index
-    data["Date"] = pd.to_datetime(data["Date"])
-    data.set_index("Date", inplace=True)
-    
-    # Printing mean and variance of returns
-    mean, var = cal_stats(cal_returns(data["Close"]))
-    print(f"Mean Returns: {mean}, Variance of Returns: {var}")
-
-    # Plotting the Price and Returns
-    data_plot(data["Close"]) 
-
 
 def cal_returns(data):                                 
     # Calculates the Returns
@@ -35,7 +22,7 @@ def cal_stats(data):
 
 def data_plot(data):
     # Plots the Price and Returns
-    _, (a1, a2) = plt.subplots(2,1, figsize=(10,6))
+    fig, (a1, a2) = plt.subplots(2,1, figsize=(10,6))
 
     a1.plot(data, linewidth= 2, color = "blue")
     a1.set_title("Close Price", fontweight="bold")
@@ -50,6 +37,6 @@ def data_plot(data):
     a2.set_facecolor("lightgray")
     
     plt.tight_layout()
-    plt.show()
+    st.pyplot(fig)
 
 

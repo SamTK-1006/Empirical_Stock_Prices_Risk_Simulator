@@ -1,6 +1,7 @@
 import Phase_1_Empirical_Time_Series as P1
 import numpy as np
 import matplotlib.pyplot as plt
+import streamlit as st
 
 def Monte_Carlo_Simulations(data):
     # Calculating Base Price, Mean and Variance of Returns
@@ -11,7 +12,8 @@ def Monte_Carlo_Simulations(data):
 
     # Simulating 1000 paths for 756 trading days (3 years)
     simulated_paths = []
-    for _ in range(1000):
+    number_simulations = st.slider("Number of Simulations", min_value=100, max_value=5000, value=1000, step=100)
+    for _ in range(number_simulations):
         path = [P0]
         simulated_returns = np.random.normal(mean, var**0.5, 756)
         for r in simulated_returns:
@@ -23,10 +25,10 @@ def Monte_Carlo_Simulations(data):
     
 
 def Plot_Monte_Carlo(simulated_paths):
-    _, (a1, a2) = plt.subplots(2,1, figsize=(10,8))
+    fig, (a1, a2) = plt.subplots(2,1, figsize=(10,8))
 
-    # Plotting 100 simulated paths to visualize the price evolution
-    for path in simulated_paths[:100]:
+    # Plotting 10% simulated paths to visualize the price evolution
+    for path in simulated_paths[:int(0.1 * len(simulated_paths))]:
         a1.plot(path, color="gray", alpha=0.2)
     a1.set_title("Monte Carlo Simulation of Price Paths", fontweight="bold")
     a1.set_xlabel("Days", fontweight="bold")
@@ -42,7 +44,7 @@ def Plot_Monte_Carlo(simulated_paths):
     a2.hist(last_prices, bins=50, edgecolor="black", color="purple")
     a2.set_xlabel("Final Price", fontweight="bold")
     a2.set_ylabel("Frequency", fontweight="bold")
-    a2.set_title("Monte Carlo Histogram of Final Prices", fontweight="bold")
+    a2.set_title("Histogram of Final Prices", fontweight="bold")
     a2.set_facecolor("lightgray")
 
     # Highlighting the starting price on the plot
@@ -56,8 +58,7 @@ def Plot_Monte_Carlo(simulated_paths):
     a2.text(0.985, 0.83, f"Most Probable Final Price: {highest_probability_price:.2f}", transform = a2.transAxes, ha = "right", va = "top", fontsize=10, bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
     
     plt.tight_layout()
-    plt.show()
-    
+    st.pyplot(fig)
 
 def Risk_Calculation(simulated_paths, P0):
     # Calculating the risk of loss (final price < initial price)
@@ -66,4 +67,5 @@ def Risk_Calculation(simulated_paths, P0):
         if path[-1] < P0:
             count = count + 1
     risk = count / len(simulated_paths)
-    print(f"Estimated Risk of Loss: {risk:.2%}")
+    st.subheader(f"Risk of Loss: {risk:.2%}")
+

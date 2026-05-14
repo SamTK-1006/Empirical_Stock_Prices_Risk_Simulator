@@ -3,3 +3,4 @@ numpy==2.4.3
 pandas==3.0.1
 yfinance==0.2.65
 scipy==1.17.1
+streamlit==1.57.0
