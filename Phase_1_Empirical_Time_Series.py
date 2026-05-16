@@ -1,15 +1,22 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import stats
 import streamlit as st
 
 def use_yahoo(data):
+    # Plotting the Price and Returns
+    data_plot(data)
+
     # Printing mean and variance of returns
     mean, var = cal_stats(cal_returns(data))
-    st.write(f"Mean Returns: {mean:.6f}, Variance of Returns: {var:.6f}")
-
-    # Plotting the Price and Returns
-    data_plot(data)   
+    col1, col2, col3 = st.columns([2,2,1])
+    with col1:  
+        st.metric("Mean Return", f"{mean:.6f}")
+    with col2:
+        st.metric("Return Std Dev", f"{np.sqrt(var):.6f}")
+    with col3:
+        st.metric("Return Variance", f"{var:.6f}")
 
 def cal_returns(data):                                 
     # Calculates the Returns
