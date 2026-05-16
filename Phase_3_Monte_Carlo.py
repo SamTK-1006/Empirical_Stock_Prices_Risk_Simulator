@@ -12,7 +12,7 @@ def Monte_Carlo_Simulations(data):
 
     # Simulating 1000 paths for 756 trading days (3 years)
     simulated_paths = []
-    number_simulations = st.slider("Number of Simulations", min_value=100, max_value=5000, value=1000, step=100)
+    number_simulations = st.slider("Number of Simulations:", min_value=100, max_value=5000, value=1000, step=100)
     for _ in range(number_simulations):
         path = [P0]
         simulated_returns = np.random.normal(mean, var**0.5, 756)
@@ -30,7 +30,7 @@ def Plot_Monte_Carlo(simulated_paths):
     # Plotting 10% simulated paths to visualize the price evolution
     for path in simulated_paths[:int(0.1 * len(simulated_paths))]:
         a1.plot(path, color="gray", alpha=0.2)
-    a1.set_title("Monte Carlo Simulation of Price Paths", fontweight="bold")
+    a1.set_title("Monte Carlo Simulation of 10% of Price Paths", fontweight="bold")
     a1.set_xlabel("Days", fontweight="bold")
     a1.set_ylabel("Price", fontweight="bold")
     a1.set_facecolor("lightgray")

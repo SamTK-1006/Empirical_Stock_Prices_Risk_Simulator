@@ -1,44 +1,46 @@
-import Phase_1_Empirical_Time_Series
-import Phase_2_Distribution
-import Phase_3_Monte_Carlo
 import yfinance as yf
 import streamlit as st
+import Phase_1_Empirical_Time_Series
 
 def main():
-    st.title("Empirical Time Series Analysis")
- 
-    ticker = st.text_input("Enter the ticker symbol (e.g., AAPL): ").strip()
-    if ticker: 
-        data = yf.download(ticker, period = "3y", interval = "1d")["Close"].dropna()
-        Phase_1_Empirical_Time_Series.use_yahoo(data)
-        
-    # Distribution Analysis
-    st.title("Distribution Analysis")
-    # Using session state to toggle the display of distribution analysis when the button is clicked
-    if "show_dist" not in st.session_state:
-        st.session_state.show_dist = False
-    if st.button("Show Distribution Analysis"):
-        st.session_state.show_dist = not st.session_state.show_dist
-    if st.session_state.show_dist:
-        Phase_2_Distribution.distribution_ticker(data)
-    
-    # Using session state to toggle the display of Q-Q plot when the button is clicked
-    if "show_qq" not in st.session_state:
-        st.session_state.show_qq = False
-    if st.button("Show Q-Q Plot"):
-        st.session_state.show_qq = not st.session_state.show_qq
-    if st.session_state.show_qq:
-        Phase_2_Distribution.generate_qq(data)
+    # Setting up the Streamlit title
+    st.set_page_config(page_title = "Quantitative Finance Dashboard", layout = "wide")
+    st.title("Quantitative Finance Dashboard")
 
-    # Monte Carlo Simulations
-    st.title("Monte Carlo Simulations")
-    # Using session state to toggle the display of Monte Carlo simulations when the button is clicked
-    if "show_mc" not in st.session_state:
-        st.session_state.show_mc = False
-    if st.button("Run Monte Carlo Simulations"):
-        st.session_state.show_mc = not st.session_state.show_mc
-    if st.session_state.show_mc:
-        Phase_3_Monte_Carlo.Monte_Carlo_Simulations(data)
+    # Introduction and instructions for the user
+    st.markdown("""
+    Welcome to the Quantitative Finance Dashboard! This dashboard provides insights into financial data through various analyses and simulations.
+
+    This project explores:
+    - Empirical time series analysis
+    - Distribution analysis
+    - Q-Q plots
+    - Monte Carlo simulation
+                
+    This project is ultimately a risk management tool that can be used to analyze the risk of a stock and its future price behavior.
+
+    Use the sidebar to navigate between pages.
+    """)
+ 
+    # User input for ticker symbol and data fetching
+    ticker = st.text_input("Enter the ticker symbol (e.g., AAPL): ").strip()
+    data = None
+    if ticker:
+        data = yf.download(ticker, period = "3y", interval = "1d")["Close"].dropna()
+        if Phase_1_Empirical_Time_Series.cal_returns(data).empty:
+            data = None
+            st.write("Invalid ticker symbol. Please enter a valid ticker symbol.")
+        else:
+            st.write("Successful! Fetching data for ticker.")
+    else:
+        st.write("Please enter a valid ticker symbol.")    
+    st.session_state["ticker"] = ticker
+    st.session_state["data"] = data
     
+    st.divider()
+
+    # Project in one sentence
+    st.subheader("Project in one Sentence")
+    st.write("This project analyzes the historical behaviour of a stock price, assumes the same behaviour in the future, and simulates various scenarios to estimate the risk of loss.")
 if __name__ == "__main__":    
     main()
