@@ -3,24 +3,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def Monte_Carlo_Simulations(data):
+    P0 = data.iloc[0].values[0]
+    P = data.iloc[-1].values[0]
+    # Simulating 1000 paths for 756 trading days (3 years)
+    simulated_paths = []
+    simulated_paths = simulator(data)
+    Plot_Monte_Carlo(simulated_paths)
+    print(f"Estimated Risk of Loss: {Risk_Calculation(simulated_paths, P):.2f}%\n")
+
+def simulator(data):
     # Calculating Base Price, Mean and Variance of Returns
     returns = P1.cal_returns(data)
     returns.rename(columns={returns.columns[0]: 'Returns'}, inplace=True)
+    P = data.iloc[-1].values[0]
     P0 = data.iloc[0].values[0]
     mean, var = P1.cal_stats(P1.cal_returns(data))
 
     # Simulating 1000 paths for 756 trading days (3 years)
     simulated_paths = []
     for _ in range(1000):
-        path = [P0]
+        path = [P]
         simulated_returns = np.random.normal(mean, var**0.5, 756)
         for r in simulated_returns:
             path.append(path[-1] * np.exp(r))
         simulated_paths.append(path)
-    
-    Plot_Monte_Carlo(simulated_paths)
-    Risk_Calculation(simulated_paths, P0)
-    
+    return simulated_paths
 
 def Plot_Monte_Carlo(simulated_paths):
     _, (a1, a2) = plt.subplots(2,1, figsize=(10,8))
@@ -59,11 +66,11 @@ def Plot_Monte_Carlo(simulated_paths):
     plt.show()
     
 
-def Risk_Calculation(simulated_paths, P0):
+def Risk_Calculation(simulated_paths, P):
     # Calculating the risk of loss (final price < initial price)
     count = 0
     for path in simulated_paths:
-        if path[-1] < P0:
+        if path[-1] < P:
             count = count + 1
     risk = count / len(simulated_paths)
-    print(f"Estimated Risk of Loss: {risk:.2%}")
+    return risk*100

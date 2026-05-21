@@ -2,27 +2,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-def use_yahoo(data):
+def time_series(data):
     # Printing mean and variance of returns
     mean, var = cal_stats(cal_returns(data))
     print(f"Mean Returns: {mean}, Variance of Returns: {var}")
 
     # Plotting the Price and Returns
-    data_plot(data)   
-
-
-def use_own(data):
-    # Converting Date to datetime and setting it as index
-    data["Date"] = pd.to_datetime(data["Date"])
-    data.set_index("Date", inplace=True)
-    
-    # Printing mean and variance of returns
-    mean, var = cal_stats(cal_returns(data["Close"]))
-    print(f"Mean Returns: {mean}, Variance of Returns: {var}")
-
-    # Plotting the Price and Returns
-    data_plot(data["Close"]) 
-
+    data_plot(data) 
 
 def cal_returns(data):                                 
     # Calculates the Returns
