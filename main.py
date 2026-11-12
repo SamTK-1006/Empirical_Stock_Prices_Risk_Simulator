@@ -1,58 +1,65 @@
-import Phase_1_Empirical_Time_Series
-import Phase_2_Distribution
-import Phase_3_Monte_Carlo
-import Phase_3_Monte_Carlo_GBM
-import yfinance as yf
-import pandas as pd
+from functools import partial
+
+import Phase_1_Empirical_Time_Series as P1
+import Phase_2_Distribution as P2
+import Phase_3_Monte_Carlo as P3
+
+
+def choose(title, options):
+    # Shows a numbered menu and returns the chosen option's name (number or name accepted)
+    names = list(options)
+    menu = "\n".join(f" {i}. {name}" for i, name in enumerate(names, 1))
+    answer = input(f"{title} \n{menu}\nEnter your choice (1-{len(names)}): ").strip().lower()
+
+    if answer.isdigit() and 1 <= int(answer) <= len(names):
+        return names[int(answer) - 1]
+    for name in names:
+        if answer == name.lower():
+            return name
+    print("Invalid choice. Please enter a valid option.")
+    return None
+
+
+def run_menu(title, options, data):
+    choice = choose(title, options)
+    if choice:
+        options[choice](data)
+
+
+DISTRIBUTION_OPTIONS = {
+    "Normal Distribution Overlay": P2.distribution_ticker,
+    "Q-Q Plot": P2.generate_qq,
+}
+
+MONTE_CARLO_OPTIONS = {
+    "Geometric Brownian Motion (GBM)": partial(P3.Monte_Carlo_Simulations, model=P3.GBM_Simulator),
+    "Standard": partial(P3.Monte_Carlo_Simulations, model=P3.Standard_Simulator),
+    "Bootstrapping": partial(P3.Monte_Carlo_Simulations, model=P3.Bootstrapping_Simulator),
+    "Comparison of Models": P3.Comparison_of_Models,
+}
+
+MAIN_OPTIONS = {
+    "Time Series Analysis": P1.time_series,
+    "Distribution Analysis": partial(run_menu, "Choose distribution analysis type:", DISTRIBUTION_OPTIONS),
+    "Monte Carlo Simulations": partial(run_menu, "Choose simulation type:", MONTE_CARLO_OPTIONS),
+    "Exit": None,
+}
+
 
 def main():
     print("Empirical Time Series Analysis")
-    choice = input("Would you like to use your own data or use live data? (own/live): ").strip().lower()
-    data = None
+    data = P1.load_data()
+    if data is None:
+        return
 
-    if choice == "own":
-        file_path = input("Enter the path to your CSV file: ").strip()
-        data = pd.read_csv(file_path)[["Date", "Close"]].dropna().head(756)
+    while True:
+        choice = choose("What would you like to view?", MAIN_OPTIONS)
+        if choice == "Exit":
+            print("Exiting...")
+            break
+        if choice:
+            MAIN_OPTIONS[choice](data)
 
-        # Converting Date to datetime and setting it as index
-        data["Date"] = pd.to_datetime(data["Date"])
-        data.set_index("Date", inplace=True)
-    elif choice == "live": 
-        ticker = input("Enter the ticker symbol (e.g., AAPL): ").strip()
-        data = yf.download(ticker, period = "3y", interval = "1d")["Close"].dropna()
-    else:
-        print("Invalid choice. Please enter 'own' or 'live'.")
 
-    if data is not None:
-        while True:
-            choice = input("What would you like to view? \n 1. Time Series Analysis\n 2. Distribution Analysis\n 3. Monte Carlo Simulations\n 4. Exit\nEnter your choice (1/2/3/4): ").strip().lower()
-            if choice == "1" or choice == "time series analysis":
-                Phase_1_Empirical_Time_Series.time_series(data) 
-
-            elif choice == "2" or choice == "distribution analysis":
-                ("Distribution Analysis")
-                da = input("Choose distribution analysis type: \n 1. Normal Distribution Overlay\n 2. Q-Q Plot\nEnter your choice (1/2): ").strip().lower()
-                if da == "1" or da == "normal distribution overlay":
-                    Phase_2_Distribution.distribution_ticker(data)
-                elif da == "2" or da == "q-q plot":
-                    Phase_2_Distribution.generate_qq(data)
-                    
-            elif choice == "3" or choice == "monte carlo simulations":
-                print("Monte Carlo Simulations")
-                mc = input("Choose simulation type: \n 1. Geometric Brownian Motion (GBM)\n 2. Standard\n 3. Comparison of Models\nEnter your choice (1/2/3): ").strip().lower()
-                if mc == "1" or mc == "gbm":
-                    Phase_3_Monte_Carlo_GBM.Monte_Carlo_Simulations(data)
-                elif mc == "2" or mc == "standard":
-                    Phase_3_Monte_Carlo.Monte_Carlo_Simulations(data)
-                elif mc == "3" or mc == "comparison of models":
-                    print("Comparison of Models")
-                    Phase_3_Monte_Carlo_GBM.Comparison_of_Models(data)
-                    
-            elif choice == "4" or choice == "exit":
-                print("Exiting...")
-                break
-            else:
-                print("Invalid choice. Please enter a valid option.")
-
-if __name__ == "__main__":    
+if __name__ == "__main__":
     main()
