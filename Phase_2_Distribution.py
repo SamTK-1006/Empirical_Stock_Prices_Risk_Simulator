@@ -1,56 +1,55 @@
-import Phase_1_Empirical_Time_Series as P1
-import matplotlib.pyplot as plt
 import numpy as np
+import plotly.graph_objects as go
 import scipy.stats as sc
 import streamlit as st
+
+import Phase_1_Empirical_Time_Series as P1
+
+
+def distribution_analysis(data):
+    # Renders the Distribution Analysis page
+    tab1, tab2 = st.tabs(["Normal Distribution Overlay", "Q-Q Plot"])
+    tab1.plotly_chart(distribution_ticker(data), width="stretch")
+    tab2.plotly_chart(generate_qq(data), width="stretch")
+
 
 def distribution_ticker(data):
     # Comparing distribution of returns with normal distribution
     returns = P1.cal_returns(data)
     mean, var = P1.cal_stats(returns)
-    
-    # Plotting the original histogram of returns
-    fig , ax = plt.subplots(figsize=(10,6))
-    ax.hist(returns, color = "orange", edgecolor = "black", bins = 20, density = True)
-    ax.set_title("Normal Distribution Overlay", fontweight="bold")
-    ax.set_xlabel("Return Values", fontweight="bold")
-    ax.set_ylabel("Density", fontweight="bold")
-    ax.set_facecolor("lightgray")
+
+    fig = go.Figure()
+    fig.add_histogram(x=returns, nbinsx=20, histnorm="probability density", name="Returns",
+                      marker=dict(color="orange", line=dict(color="black", width=1)))
 
     # Plotting normal distribution overlay
-    xmin, xmax = plt.xlim()
-    x = np.linspace(xmin, xmax, 10000)
-    p = sc.norm.pdf(x, mean, var**0.5)
-    ax.plot(x, p, "black" , linewidth=1.5)
+    pad = 0.1 * (returns.max() - returns.min())
+    x = np.linspace(returns.min() - pad, returns.max() + pad, 1000)
+    fig.add_scatter(x=x, y=sc.norm.pdf(x, mean, var ** 0.5), mode="lines", name="Normal Distribution",
+                    line=dict(color="black", width=2))
 
-    plt.tight_layout()
-    st.pyplot(fig)
+    fig.update_layout(title="Normal Distribution Overlay", xaxis_title="Return Values", yaxis_title="Density",
+                      legend=dict(orientation="h", y=1.1, x=1, xanchor="right"))
+    return P1.style(fig, 520)
+
 
 def generate_qq(data):
     # Q-Q plot to compare empirical returns with theoretical normal distribution
-
-    # Calulating empirical returns and statistics
-    returns = P1.cal_returns(data).dropna()
+    returns = P1.cal_returns(data)
     mean, var = P1.cal_stats(returns)
-    returns = np.sort(returns)
-    returns = sorted(returns)
+    returns = np.sort(returns.to_numpy())
+    n = len(returns)
 
     # Generating theoretical quantiles
-    theoretical = sc.norm.ppf(np.linspace(1/len(returns), (len(returns)-1)/len(returns), len(returns)), loc=mean, scale=var**0.5)
-    fig, ax = plt.subplots(figsize=(10,6))
-    ax.plot(theoretical, returns, color = "blue", marker = "o", linestyle="None")
-    ax.plot(theoretical, theoretical, color = "red", linestyle="--")
-    
-    # Setting limits to ensure the plot is square and properly scaled
-    min_val = min(theoretical.min(), min(returns))
-    max_val = max(theoretical.max(), max(returns))
-    ax.set_xlim(min_val, max_val)
-    ax.set_ylim(min_val, max_val)
+    theoretical = sc.norm.ppf(np.linspace(1 / n, (n - 1) / n, n), loc=mean, scale=var ** 0.5)
+    lo, hi = min(theoretical.min(), returns.min()), max(theoretical.max(), returns.max())
 
-    # Adding labels and title
-    ax.set_xlabel("Theoretical Quantiles", fontweight="bold")
-    ax.set_ylabel("Empirical Quantiles", fontweight="bold")
-    ax.set_title("Q-Q Plot", fontweight="bold")
+    fig = go.Figure()
+    fig.add_scatter(x=theoretical, y=returns, mode="markers", name="Returns", marker=dict(color="blue", size=6))
+    fig.add_scatter(x=[lo, hi], y=[lo, hi], mode="lines", name="Normal", line=dict(color="red", dash="dash"))
 
-    plt.tight_layout()
-    st.pyplot(fig)
+    # Equal axis scaling so the plot is square and properly scaled
+    fig.update_layout(title="Q-Q Plot", xaxis_title="Theoretical Quantiles", yaxis_title="Empirical Quantiles",
+                      legend=dict(orientation="h", y=1.1, x=1, xanchor="right"),
+                      xaxis=dict(range=[lo, hi]), yaxis=dict(range=[lo, hi], scaleanchor="x", scaleratio=1))
+    return P1.style(fig, 600)

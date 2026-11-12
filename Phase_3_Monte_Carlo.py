@@ -1,71 +1,75 @@
-import Phase_1_Empirical_Time_Series as P1
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import streamlit as st
 
-def Monte_Carlo_Simulations(data):
-    # Calculating Base Price, Mean and Variance of Returns
-    returns = P1.cal_returns(data)
-    returns.rename(columns={returns.columns[0]: 'Returns'}, inplace=True)
-    P0 = data.iloc[0].values[0]
-    mean, var = P1.cal_stats(P1.cal_returns(data))
+import Phase_1_Empirical_Time_Series as P1
 
-    # Simulating 1000 paths for 756 trading days (3 years)
-    simulated_paths = []
-    number_simulations = st.slider("Number of Simulations:", min_value=100, max_value=5000, value=1000, step=100)
-    for _ in range(number_simulations):
-        path = [P0]
-        simulated_returns = np.random.normal(mean, var**0.5, 756)
-        for r in simulated_returns:
-            path.append(path[-1] * np.exp(r))
-        simulated_paths.append(path)
-    
-    Plot_Monte_Carlo(simulated_paths)
-    Risk_Calculation(simulated_paths, P0)
-    
+# Simulating paths for 756 trading days (3 years)
+N_DAYS = 756
+
+
+def Monte_Carlo_Simulations(data):
+    # Renders the Monte Carlo Simulations page
+    n_paths = st.slider("Number of Simulations:", min_value=100, max_value=5000, value=1000, step=100)
+
+    P = float(data.iloc[-1])
+    simulated_paths = simulator(data, n_paths)
+    final_prices = simulated_paths[:, -1]
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Starting Price", f"{P:,.2f}", border=True)
+    c2.metric("Most Probable Final Price", f"{most_probable_price(final_prices):,.2f}", border=True)
+    c3.metric("Risk of Loss", f"{Risk_Calculation(simulated_paths, P):.2f}%", border=True)
+
+    paths_fig, hist_fig = Plot_Monte_Carlo(simulated_paths)
+    st.plotly_chart(paths_fig, width="stretch")
+    st.plotly_chart(hist_fig, width="stretch")
+
+
+def simulator(data, n_paths):
+    # Daily log returns drawn from a Normal(mean, variance) and compounded from the last price
+    mean, var = P1.cal_stats(P1.cal_returns(data))
+    simulated_returns = np.random.default_rng().normal(mean, var ** 0.5, size=(n_paths, N_DAYS))
+    cumulative = np.hstack([np.zeros((n_paths, 1)), np.cumsum(simulated_returns, axis=1)])
+    return data.iloc[-1] * np.exp(cumulative)
+
+
+def most_probable_price(final_prices):
+    # Midpoint of the most frequent histogram bin (the mode)
+    counts, bins = np.histogram(final_prices, bins=50)
+    i = np.argmax(counts)
+    return (bins[i] + bins[i + 1]) / 2
+
+
+def Risk_Calculation(simulated_paths, P):
+    # Calculating the risk of loss (final price < initial price), in %
+    return float(np.mean(simulated_paths[:, -1] < P) * 100)
+
 
 def Plot_Monte_Carlo(simulated_paths):
-    fig, (a1, a2) = plt.subplots(2,1, figsize=(10,8))
+    P = simulated_paths[0, 0]
+    final_prices = simulated_paths[:, -1]
 
-    # Plotting 10% simulated paths to visualize the price evolution
-    for path in simulated_paths[:int(0.1 * len(simulated_paths))]:
-        a1.plot(path, color="gray", alpha=0.2)
-    a1.set_title("Monte Carlo Simulation of 10% of Price Paths", fontweight="bold")
-    a1.set_xlabel("Days", fontweight="bold")
-    a1.set_ylabel("Price", fontweight="bold")
-    a1.set_facecolor("lightgray")
-    
-    # Finding the last price of each simulated path 
-    last_prices = []
-    for path in simulated_paths:
-        last_prices.append(path[-1])
+    # Plotting 10% of the simulated paths to visualize the price evolution (drawn as one NaN-separated trace)
+    k = int(0.1 * len(simulated_paths))
+    days = np.arange(simulated_paths.shape[1])
+    xs = np.tile(np.append(days, np.nan), k)
+    ys = np.hstack([simulated_paths[:k], np.full((k, 1), np.nan)]).ravel()
 
-    # Labelling the axes and title
-    a2.hist(last_prices, bins=50, edgecolor="black", color="purple")
-    a2.set_xlabel("Final Price", fontweight="bold")
-    a2.set_ylabel("Frequency", fontweight="bold")
-    a2.set_title("Histogram of Final Prices", fontweight="bold")
-    a2.set_facecolor("lightgray")
+    paths_fig = go.Figure(go.Scatter(x=xs, y=ys, mode="lines", line=dict(color="rgba(120,120,120,0.35)", width=1),
+                                     hoverinfo="skip"))
+    paths_fig.add_hline(y=P, line=dict(color="red", dash="dash"), annotation_text="Start")
+    paths_fig.update_layout(title="Monte Carlo Simulation of 10% of Price Paths", xaxis_title="Days",
+                            yaxis_title="Price", showlegend=False)
 
-    # Highlighting the starting price on the plot
-    starting_price = simulated_paths[0][0]
-    a2.text(0.985, 0.95, f"Starting Price: {starting_price:.2f}", transform = a2.transAxes, ha = "right", va = "top", fontsize=10, bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
-    
-    # Highlighting the most probable final price (mode) on the plot
-    counts, bins = np.histogram(last_prices, bins=50)
-    max_bin_index = np.argmax(counts)
-    highest_probability_price = (bins[max_bin_index] + bins[max_bin_index+1]) / 2
-    a2.text(0.985, 0.83, f"Most Probable Final Price: {highest_probability_price:.2f}", transform = a2.transAxes, ha = "right", va = "top", fontsize=10, bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
-    
-    plt.tight_layout()
-    st.pyplot(fig)
+    # Histogram of the final prices
+    hist_fig = go.Figure(go.Histogram(x=final_prices, nbinsx=50,
+                                      marker=dict(color="purple", line=dict(color="black", width=1))))
+    hist_fig.add_vline(x=P, line=dict(color="red", dash="dash"), annotation_text="Start",
+                       annotation_position="top left")
+    hist_fig.add_vline(x=most_probable_price(final_prices), line=dict(color="green", dash="dot"),
+                       annotation_text="Most probable", annotation_position="top right")
+    hist_fig.update_layout(title="Histogram of Final Prices", xaxis_title="Final Price", yaxis_title="Frequency",
+                           showlegend=False)
 
-def Risk_Calculation(simulated_paths, P0):
-    # Calculating the risk of loss (final price < initial price)
-    count = 0
-    for path in simulated_paths:
-        if path[-1] < P0:
-            count = count + 1
-    risk = count / len(simulated_paths)
-    st.subheader(f"Risk of Loss: {risk:.2%}")
-
+    return P1.style(paths_fig, 480), P1.style(hist_fig, 480)

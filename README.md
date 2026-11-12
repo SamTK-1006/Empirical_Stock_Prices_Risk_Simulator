@@ -1,49 +1,67 @@
-Empirical Time Series Analysis and Monte Carlo Simulation
+# Quantitative Finance Dashboard: Empirical Time Series Analysis and Monte Carlo Simulation
 
+## Overview
 
-> Overview: 
+A Streamlit dashboard that analyzes a stock's price history, compares its returns with a normal distribution, and simulates future price paths to estimate the risk of loss.
 
-This project analyzes financial time series data using statistical methods and Monte Carlo simulation. It focuses on return distributions, normality assessment, and simulation of future price paths. Currently, the project is deployed on streamlit and can be accessed through the following link: 
-https://monte-carlo-simulator-samtk-1006.streamlit.app/
+This project analyzes financial time series data using statistical methods and Monte Carlo simulation, focusing on return distributions, normality assessment, and probabilistic modelling of future stock prices.
 
+**Live Application:** [Monte Carlo Simulator](https://monte-carlo-simulator-samtk-1006.streamlit.app/)
 
-> Features: 
- - Calculation of returns
- - Statistical analysis (mean and variance)
- - Histogram with normal distribution overlay
- - Q-Q plot for normality testing
- - Monte Carlo simulation of price paths
+## Features
 
+- Calculation and analysis of stock returns
+- Statistical analysis (mean and variance)
+- Histogram with normal distribution overlay
+- Q-Q plot for normality testing
+- Monte Carlo simulation of future price paths
+- Estimation of risk of loss
 
-> Usage:
+## Project Structure
 
-Run the script: 
-main.py
+- `main.py` — Page setup, navigation and sidebar ticker input
+- `pages/` — Home, Time Series Analysis, Distribution Analysis and Monte Carlo Simulations
+- `Phase_1_Empirical_Time_Series.py` — Data loading, returns, statistics, price and returns plots
+- `Phase_2_Distribution.py` — Normal distribution overlay and Q-Q plot
+- `Phase_3_Monte_Carlo.py` — Simulator, risk of loss and plots
+- `.streamlit/config.toml` — Streamlit configuration
 
+## Usage
 
+Install the required dependencies:
 
-> Summary:
+```bash
+pip install -r requirements.txt
+```
 
-This project takes historical price data from either a CSV file or live data of the last three years (using yfinance) and computes returns to study their statistical properties. It evaluates whether the returns follow a normal distribution using visual and quantitative methods. Based on these statistics, a Monte Carlo simulation is used to generate possible future price paths, providing a simple probabilistic view of how the stock might move over time.
+Run the application:
 
+```bash
+streamlit run main.py
+```
 
+## Summary
 
-> Concepts:
+The project takes the last three years of daily prices for a selected ticker using Yahoo Finance (`yfinance`) and computes returns to study their statistical properties. It evaluates whether returns follow a normal distribution using visual methods. Based on these statistics, Monte Carlo simulations generate possible future price paths, providing a probabilistic perspective on potential stock movements.
 
-Time series analysis, return distributions, normality testing, and Monte Carlo simulation.
+## Concepts
 
+- Financial Time Series Analysis
+- Return Distributions
+- Statistical Normality Testing
+- Monte Carlo Simulation
+- Probabilistic Risk Estimation
 
+## Libraries Used
 
-> Libraries Used:
+- Streamlit
+- NumPy
+- Pandas
+- Matplotlib
+- SciPy
+- Plotly
+- yfinance
 
-The project primarily relies on the following Python libraries:
- - numpy
- - pandas
- - matplotlib
- - streamlit
-
-
-
-> Author:
+## Author
 
 Samarth T K
