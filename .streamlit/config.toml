@@ -3,3 +3,6 @@ primaryColor = "#6C3FC5"
 
 [client]
 toolbarMode = "minimal"
+
+[theme]
+base = "dark"
