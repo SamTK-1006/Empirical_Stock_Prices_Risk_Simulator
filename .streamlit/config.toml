@@ -1,8 +1,7 @@
 [theme]
 primaryColor = "#6C3FC5"
+base = "dark"
 
 [client]
 toolbarMode = "minimal"
 
-[theme]
-base = "dark"
